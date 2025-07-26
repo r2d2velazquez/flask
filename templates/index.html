@@ -1,26 +1,665 @@
-<!doctype html>
-<html lang="en">
-  <head>
-      <meta charset="utf-8">
-      <meta name="description" content="alphasec">
-      <meta name="author" content="alphasec">
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-      <title>alphasec</title>
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-      <link rel="stylesheet" href="static/css/styles.css">
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:500&display=swap">
-      <link rel="icon" href="static/favicon.ico" type="image/x-icon">
-  </head>
-  <body>
-    <div class="row">
-      <h1 class="h1">alphasec</h1>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sephardic Hebrew Bible Reader</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #2c5282;
+            --accent-color: #3182ce;
+            --text-color: #2d3748;
+            --bg-color: #f7fafc;
+            --border-color: #e2e8f0;
+            --hebrew-font: 'SBL Hebrew', 'Ezra SIL', 'Times New Roman', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .sidebar {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+
+        .content-area {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .book-selector, .chapter-selector {
+            margin-bottom: 1rem;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .verse-container {
+            margin-bottom: 2rem;
+        }
+
+        .verse-number {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .hebrew-text {
+            font-family: var(--hebrew-font);
+            font-size: 1.8rem;
+            line-height: 1.8;
+            direction: rtl;
+            text-align: right;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-right: 4px solid var(--accent-color);
+        }
+
+        .english-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #4a5568;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .audio-controls {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+
+        .audio-upload {
+            margin-bottom: 1rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 0.75rem;
+            background: white;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-label:hover {
+            border-color: var(--accent-color);
+            background: #f0f8ff;
+        }
+
+        .word-timing {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .word-timing-text {
+            font-family: var(--hebrew-font);
+            font-size: 1.2rem;
+            direction: rtl;
+            flex: 1;
+        }
+
+        .word-timing-time {
+            font-size: 0.9rem;
+            color: #666;
+            background: #e2e8f0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .word-timing-play {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            width: auto;
+            margin: 0;
+        }
+
+        .processing-indicator {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .processing-indicator.active {
+            display: block;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #2f855a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .hebrew-text {
+                font-size: 1.4rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>ספרדי קורא התנ"ך</h1>
+            <p class="subtitle">Sephardic Hebrew Bible Reader with Audio Processing</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            <div class="sidebar">
+                <h2 class="section-title">Navigation</h2>
+
+                <div class="book-selector">
+                    <label for="book-select">Select Book:</label>
+                    <select id="book-select">
+                        <option value="">Choose a book...</option>
+                    </select>
+                </div>
+
+                <div class="chapter-selector">
+                    <label for="chapter-input">Chapter:</label>
+                    <input type="number" id="chapter-input" min="1" placeholder="Enter chapter">
+                </div>
+
+                <div class="chapter-selector">
+                    <label for="verse-input">Verse:</label>
+                    <input type="number" id="verse-input" min="1" placeholder="Enter verse">
+                </div>
+
+                <button id="load-text-btn">Load Text</button>
+
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="word-count">0</div>
+                        <div class="stat-label">Words</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="audio-duration">0s</div>
+                        <div class="stat-label">Duration</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div id="verse-display">
+                    <h2 class="section-title">Hebrew Text</h2>
+                    <p>Select a book, chapter, and verse to display the text.</p>
+                </div>
+
+                <div class="audio-controls">
+                    <h3 class="section-title">Audio Processing</h3>
+
+                    <div class="audio-upload">
+                        <label for="audio-file">Upload Audio File:</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="audio-file" accept="audio/*">
+                            <label for="audio-file" class="file-input-label">
+                                <span id="file-label-text">Choose audio file or drag here</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button id="process-audio-btn" disabled>Process Audio</button>
+
+                    <div class="processing-indicator" id="processing-indicator">
+                        <div class="loading"></div>
+                        <p>Processing audio and aligning with text...</p>
+                    </div>
+
+                    <div class="error-message" id="error-message"></div>
+                    <div class="success-message" id="success-message"></div>
+
+                    <audio id="audio-player" class="audio-player" controls style="display: none;">
+                        Your browser does not support the audio element.
+                    </audio>
+
+                    <div id="word-timings" style="display: none;">
+                        <h4 class="section-title">Word Timings</h4>
+                        <div id="word-timings-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="row">
-      <div>
-      </div>
-    </div>
-    <div class="row">
-      <span class="text-muted small">alphasec © 2024. All rights reserved.</span>
-    </div>
-  </body>
+
+    <script>
+        class HebrewBibleReader {
+            constructor() {
+                this.currentAudio = null;
+                this.currentWordTimings = [];
+                this.currentHebrewText = '';
+                this.init();
+            }
+
+            init() {
+                this.loadBooks();
+                this.setupEventListeners();
+            }
+
+            async loadBooks() {
+                try {
+                    const response = await fetch('/api/books');
+                    const books = await response.json();
+                    const select = document.getElementById('book-select');
+
+                    books.forEach(book => {
+                        const option = document.createElement('option');
+                        option.value = book;
+                        option.textContent = book;
+                        select.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error loading books:', error);
+                }
+            }
+
+            setupEventListeners() {
+                // Load text button
+                document.getElementById('load-text-btn').addEventListener('click', () => {
+                    this.loadVerse();
+                });
+
+                // Audio file input
+                document.getElementById('audio-file').addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        document.getElementById('file-label-text').textContent = file.name;
+                        document.getElementById('process-audio-btn').disabled = !this.currentHebrewText;
+                        this.loadAudioFile(file);
+                    }
+                });
+
+                // Process audio button
+                document.getElementById('process-audio-btn').addEventListener('click', () => {
+                    this.processAudio();
+                });
+
+                // Enter key support
+                document.getElementById('verse-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.loadVerse();
+                    }
+                });
+
+                document.getElementById('chapter-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.loadVerse();
+                    }
+                });
+            }
+
+            loadAudioFile(file) {
+                const url = URL.createObjectURL(file);
+                const audioPlayer = document.getElementById('audio-player');
+                audioPlayer.src = url;
+                audioPlayer.style.display = 'block';
+                this.currentAudio = file;
+            }
+
+            async loadVerse() {
+                const book = document.getElementById('book-select').value;
+                const chapter = document.getElementById('chapter-input').value;
+                const verse = document.getElementById('verse-input').value;
+
+                if (!book || !chapter || !verse) {
+                    this.showError('Please select a book, chapter, and verse');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/api/verse/${encodeURIComponent(book)}/${chapter}/${verse}`);
+
+                    if (!response.ok) {
+                        throw new Error('Verse not found');
+                    }
+
+                    const verseData = await response.json();
+                    this.displayVerse(verseData);
+                    this.currentHebrewText = verseData.hebrew_text;
+
+                    // Enable audio processing if audio file is loaded
+                    if (this.currentAudio) {
+                        document.getElementById('process-audio-btn').disabled = false;
+                    }
+
+                } catch (error) {
+                    console.error('Error loading verse:', error);
+                    this.showError('Could not load verse. Please try again.');
+                }
+            }
+
+            displayVerse(verseData) {
+                const display = document.getElementById('verse-display');
+                const words = this.extractHebrewWords(verseData.hebrew_text);
+
+                display.innerHTML = `
+                    <div class="verse-container">
+                        <div class="verse-number">${verseData.book} ${verseData.chapter}:${verseData.verse}</div>
+                        <div class="hebrew-text">${verseData.hebrew_text}</div>
+                        <div class="english-text">${verseData.english_translation || 'No translation available'}</div>
+                    </div>
+                `;
+
+                // Update word count
+                document.getElementById('word-count').textContent = words.length;
+            }
+
+            extractHebrewWords(text) {
+                // Simple Hebrew word extraction
+                const hebrewRegex = /[\u0590-\u05FF]+/g;
+                return text.match(hebrewRegex) || [];
+            }
+
+            async processAudio() {
+                if (!this.currentAudio || !this.currentHebrewText) {
+                    this.showError('Please load both text and audio file');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('audio', this.currentAudio);
+                formData.append('hebrew_text', this.currentHebrewText);
+
+                this.showProcessing(true);
+                this.hideMessages();
+
+                try {
+                    const response = await fetch('/api/process-audio', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Audio processing failed');
+                    }
+
+                    const result = await response.json();
+                    this.displayWordTimings(result);
+                    this.showSuccess('Audio processed successfully!');
+
+                    // Update duration
+                    document.getElementById('audio-duration').textContent =
+                        `${result.total_duration.toFixed(1)}s`;
+
+                } catch (error) {
+                    console.error('Error processing audio:', error);
+                    this.showError('Could not process audio. Please try again.');
+                } finally {
+                    this.showProcessing(false);
+                }
+            }
+
+            displayWordTimings(result) {
+                this.currentWordTimings = result.word_timings;
+                const container = document.getElementById('word-timings');
+                const list = document.getElementById('word-timings-list');
+
+                list.innerHTML = '';
+
+                result.word_timings.forEach((timing, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'word-timing';
+                    item.innerHTML = `
+                        <div class="word-timing-text">${timing.word}</div>
+                        <div class="word-timing-time">${timing.start.toFixed(2)}s - ${timing.end.toFixed(2)}s</div>
+                        <button class="word-timing-play" onclick="reader.playWordSegment(${index})">Play</button>
+                    `;
+                    list.appendChild(item);
+                });
+
+                container.style.display = 'block';
+            }
+
+            playWordSegment(index) {
+                const timing = this.currentWordTimings[index];
+                if (!timing) return;
+
+                const audioPlayer = document.getElementById('audio-player');
+                audioPlayer.currentTime = timing.start;
+                audioPlayer.play();
+
+                // Stop playback at end time
+                const stopPlayback = () => {
+                    if (audioPlayer.currentTime >= timing.end) {
+                        audioPlayer.pause();
+                        audioPlayer.removeEventListener('timeupdate', stopPlayback);
+                    }
+                };
+
+                audioPlayer.addEventListener('timeupdate', stopPlayback);
+            }
+
+            showProcessing(show) {
+                const indicator = document.getElementById('processing-indicator');
+                indicator.classList.toggle('active', show);
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                setTimeout(() => {
+                    errorDiv.style.display = 'none';
+                }, 5000);
+            }
+
+            showSuccess(message) {
+                const successDiv = document.getElementById('success-message');
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+                setTimeout(() => {
+                    successDiv.style.display = 'none';
+                }, 5000);
+            }
+
+            hideMessages() {
+                document.getElementById('error-message').style.display = 'none';
+                document.getElementById('success-message').style.display = 'none';
+            }
+        }
+
+        // Initialize the application
+        const reader = new HebrewBibleReader();
+    </script>
+</body>
 </html>
